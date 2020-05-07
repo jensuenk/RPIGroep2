@@ -8,6 +8,10 @@ GPIO.setmode(GPIO.BCM)
 # Variables
 topic = ""
 clientId = ""
+player = ""
+playerNumber
+hasNumber = False
+# rol/virus/kar
 
 # Buttons
 buttonLeftPin = 19
@@ -28,16 +32,49 @@ GPIO.setup(list(segmentPins.values()), GPIO.OUT)
 GPIO.output(list(segmentPins.values()), GPIO.LOW)
 
 def buttonLeft(channel):
+	global hasNumber
 	print("[Debug] Right button")
-	# Todo:
-	# Send message to broker
-	# client.publish(topic, "")
+	if not hasNumber:
+		print("[Debug] No player/ number assigned")
+		requestPlayer()
+		return
+	client.publish(player + playerNumber, "UP")
 	
 def buttonRight(channel):
+	global player
+	global playerNumber
 	print("[Debug] Left button")
-	# Todo:
-	# Send message to broker
-	# client.publish(topic, "")
+	if not hasNumber:
+		print("[Debug] No player/ number assigned")
+		requestPlayer()
+		return
+	client.publish(player + playerNumber, "DOWN")
+
+def requestPlayer():
+	# Todo: Ask console for a player and number
+	# client.publish("requestplayer")
+	# client.publish("requestnumber")
+
+# Called when received a message from the broker to assign a player and number
+def assignPlayer(playerReceived, playerNumberReceived):
+	global player
+	global playerReceived
+	global leds
+	player = playerReceived
+	playerNumber = playerNumberReceived
+	
+	GPIO.output(list(leds), GPIO.LOW)
+	if player == "rol":
+		print("[Debug] Console assigned to ROL")
+		GPIO.output(leds[2], GPIO.HIGH)
+	elif player == "virus":
+		print("[Debug] Console assigned to VIRUS")
+		GPIO.output(leds[0], GPIO.HIGH)
+	elif player == "kar":
+		print("[Debug] Console assigned to KAR")
+		GPIO.output(leds[1], GPIO.HIGH)
+	showNumber(playerNumberReceived)
+	print("[Debug] Playing with number: " + str(playerNumberReceived))
 	
 def showNumber(number):
 	digit = digitBitmap[number]
@@ -58,6 +95,8 @@ def on_message(client, userdata, msg):
 	# Todo:
 	# Check message when received and take action
 	#if "" in message:
+	#if "playerassign" in message:
+	# 	assignPlayer(..., ...)
 
 GPIO.add_event_detect(buttonLeftPin, GPIO.RISING, callback=buttonLeft, bouncetime=100)
 GPIO.add_event_detect(buttonRightPin, GPIO.RISING, callback=buttonRight, bouncetime=100)
