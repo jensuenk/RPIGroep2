@@ -6,10 +6,10 @@ import paho.mqtt.client as mqtt
 GPIO.setmode(GPIO.BCM)
 
 # Variables
-topic = "Game"
-clientId = "clientId-FhKqeekghi"
+# toiletPaper - corona - shoppingCar
 player = "toiletPaper"
-playerNumber = 1
+# 0 - 1 - 2 - ...
+playerNumber = 0
 hasNumber = True
 
 # Buttons
@@ -38,7 +38,7 @@ def buttonLeft(channel):
 		requestPlayer()
 		return
 	#print("[Debug] Sending message: " + player + " " + str(playerNumber) + " - " + "UP")
-	client.publish("Game/" + player + str(playerNumber), "UP")
+	client.publish("game/" + player + str(playerNumber), "RIGHT")
 	
 def buttonRight(channel):
 	global player
@@ -49,7 +49,7 @@ def buttonRight(channel):
 		requestPlayer()
 		return
 	#print("[Debug] Sending message: " + player + " " + str(playerNumber) + " - " + "DOWN")
-	client.publish("Game/" + player + str(playerNumber), "DOWN")
+	client.publish("game/" + player + str(playerNumber), "LEFT")
 	
 
 def requestPlayer():
@@ -59,25 +59,15 @@ def requestPlayer():
 	print("[Debug] Requesting player")
 
 # Called when received a message from the broker to assign a player and number
-def assignPlayer(str, number):
+def assignPlayer(playerReceived, playerNumberReceived):
 	global player
-	global playerReceived
-	global leds
+	global playerNumber
 	player = playerReceived
 	playerNumber = playerNumberReceived
 	
-	GPIO.output(list(leds), GPIO.LOW)
-	if player == "toiletPaper":
-		print("[Debug] Console assigned to TOILETPAPAER")
-		GPIO.output(leds[2], GPIO.HIGH)
-	elif player == "corona":
-		print("[Debug] Console assigned to CORONA")
-		GPIO.output(leds[0], GPIO.HIGH)
-	elif player == "shoppingCar":
-		print("[Debug] Console assigned to SHOPPINGCAR")
-		GPIO.output(leds[1], GPIO.HIGH)
-	showNumber(playerNumberReceived)
-	print("[Debug] Playing with number: " + str(playerNumberReceived))
+	showNumber(playerNumber)
+	print("[Debug] Playing with number: " + str(playerNumber))
+	showLed()
 	
 def showNumber(number):
 	digit = digitBitmap[number]
@@ -86,11 +76,25 @@ def showNumber(number):
 	for segmentMask,segmentPin in segmentMasks.items():
 		if digit & segmentPin == segmentPin:
 			GPIO.output(segmentPins[segmentMask], GPIO.HIGH)
+	
+def showLed():
+	global player
+	global leds
+	GPIO.output(list(leds), GPIO.LOW)
+	if player == "corona":
+		print("[Debug] Console assigned to CORONA")
+		GPIO.output(leds[0], GPIO.HIGH)
+	elif player == "shoppingCar":
+		print("[Debug] Console assigned to SHOPPINGCAR")
+		GPIO.output(leds[1], GPIO.HIGH)
+	elif player == "toiletPaper":
+		print("[Debug] Console assigned to TOILETPAPAER")
+		GPIO.output(leds[2], GPIO.HIGH)
 
 def on_connect(client, userdata, flags, rc):
 	global topic
 	print("[Debug] Connected with result code " + str(rc))
-	client.subscribe(topic)
+	client.subscribe("game/#")
 
 def on_message(client, userdata, msg):
 	message = str(msg.payload.decode("utf-8"))
@@ -104,10 +108,14 @@ def on_message(client, userdata, msg):
 GPIO.add_event_detect(buttonLeftPin, GPIO.RISING, callback=buttonLeft, bouncetime=100)
 GPIO.add_event_detect(buttonRightPin, GPIO.RISING, callback=buttonRight, bouncetime=100)
 
-client = mqtt.Client(clientId)
+client = mqtt.Client()
 client.on_connect = on_connect
 client.on_message = on_message
 client.connect("broker.mqttdashboard.com", port=1883, keepalive=60, bind_address="")
+#client.subscribe("game/assignPlayer")
+
+
+assignPlayer(player, playerNumber)
 
 rc = 0
 while rc == 0:
