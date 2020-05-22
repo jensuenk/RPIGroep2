@@ -3,7 +3,9 @@ import paho.mqtt.client as mqtt
 from threading import Thread
 
 class Player:
-    def __init__(self, type, playerID):
+    def __init__(self, type, playerID, spawnX, spawnY):
+        self.spawnX = spawnX
+        self.spawnY = spawnY
         self.canvas = None
         self.client = None
         self.file = None
@@ -20,7 +22,7 @@ class Player:
             self.file = tk.PhotoImage(file = "tpResized.png")
         elif (self.type == "shoppingCart"):
             self.file = tk.PhotoImage(file = "cartResized.png")
-        self.object = self.canvas.create_image(50,50, anchor = tk.NW, image = self.file)
+        self.object = self.canvas.create_image(self.spawnX,self.spawnY, anchor = tk.NW, image = self.file)
 
     def MQTT(self):
         self.client = mqtt.Client()
@@ -41,29 +43,32 @@ class Player:
         self.client.loop_forever()
 
     def Move(self, moveDir):
-        if moveDir == "RIGHT":
+        if moveDir == "right":
             self.canvas.move(self.object, TPMoveSpeedX, 0)
             print(self.type + str(self.playerID) + " moved right!")
-        elif moveDir == "LEFT":
+        elif moveDir == "left":
             self.canvas.move(self.object, -TPMoveSpeedX, 0)
             print(self.type + str(self.playerID) + " moved left!")
-        elif moveDir == "UP":
+        elif moveDir == "up":
             self.canvas.move(self.object, 0, -TPMoveSpeedY)
             print(self.type + str(self.playerID) + " moved up!")
-        elif moveDir == "DOWN":
+        elif moveDir == "down":
             self.canvas.move(self.object, 0, TPMoveSpeedY)
             print(self.type + str(self.playerID) + " moved down!")
+        elif moveDir == "DIE":
+            print(self.type + str(self.playerID) + " died and respawned at x: " + str(self.spawnX) + " and y: " + str(self.spawnY))
+            self.canvas.coords(self.object, self.spawnX, self.spawnY)
 
 
 
-players = [Player("toiletPaper", 0), Player("shoppingCart", 0), Player("corona", 0)]
+players = [Player("toiletPaper", 0, 0, 242),Player("toiletPaper", 1, 0, 525) , Player("shoppingCart", 0, 960, 462), Player("corona", 0, 1800, 396)]
 
 TPMoveSpeedX, TPMoveSpeedY = 20, 20
 
 
 def GUI():
     window = tk.Tk()
-    canvas = tk.Canvas(window, width = 1800, height = 950)
+    canvas = tk.Canvas(window, width = 1920, height = 950)
     canvas.pack()
 
     for player in players:
