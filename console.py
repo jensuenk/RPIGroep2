@@ -6,12 +6,11 @@ import paho.mqtt.client as mqtt
 GPIO.setmode(GPIO.BCM)
 
 # Variables
-topic = ""
-clientId = ""
-player = ""
-playerNumber
-hasNumber = False
-# rol/virus/kar
+topic = "Game"
+clientId = "clientId-FhKqeekghi"
+player = "toiletPaper"
+playerNumber = 1
+hasNumber = True
 
 # Buttons
 buttonLeftPin = 19
@@ -38,7 +37,8 @@ def buttonLeft(channel):
 		print("[Debug] No player/ number assigned")
 		requestPlayer()
 		return
-	client.publish(player + playerNumber, "UP")
+	#print("[Debug] Sending message: " + player + " " + str(playerNumber) + " - " + "UP")
+	client.publish("Game/" + player + str(playerNumber), "UP")
 	
 def buttonRight(channel):
 	global player
@@ -48,15 +48,18 @@ def buttonRight(channel):
 		print("[Debug] No player/ number assigned")
 		requestPlayer()
 		return
-	client.publish(player + playerNumber, "DOWN")
+	#print("[Debug] Sending message: " + player + " " + str(playerNumber) + " - " + "DOWN")
+	client.publish("Game/" + player + str(playerNumber), "DOWN")
+	
 
 def requestPlayer():
 	# Todo: Ask console for a player and number
 	# client.publish("requestplayer")
 	# client.publish("requestnumber")
+	print("[Debug] Requesting player")
 
 # Called when received a message from the broker to assign a player and number
-def assignPlayer(playerReceived, playerNumberReceived):
+def assignPlayer(str, number):
 	global player
 	global playerReceived
 	global leds
@@ -64,14 +67,14 @@ def assignPlayer(playerReceived, playerNumberReceived):
 	playerNumber = playerNumberReceived
 	
 	GPIO.output(list(leds), GPIO.LOW)
-	if player == "rol":
-		print("[Debug] Console assigned to ROL")
+	if player == "toiletPaper":
+		print("[Debug] Console assigned to TOILETPAPAER")
 		GPIO.output(leds[2], GPIO.HIGH)
-	elif player == "virus":
-		print("[Debug] Console assigned to VIRUS")
+	elif player == "corona":
+		print("[Debug] Console assigned to CORONA")
 		GPIO.output(leds[0], GPIO.HIGH)
-	elif player == "kar":
-		print("[Debug] Console assigned to KAR")
+	elif player == "shoppingCar":
+		print("[Debug] Console assigned to SHOPPINGCAR")
 		GPIO.output(leds[1], GPIO.HIGH)
 	showNumber(playerNumberReceived)
 	print("[Debug] Playing with number: " + str(playerNumberReceived))
@@ -101,12 +104,10 @@ def on_message(client, userdata, msg):
 GPIO.add_event_detect(buttonLeftPin, GPIO.RISING, callback=buttonLeft, bouncetime=100)
 GPIO.add_event_detect(buttonRightPin, GPIO.RISING, callback=buttonRight, bouncetime=100)
 
-player = -1
-
 client = mqtt.Client(clientId)
 client.on_connect = on_connect
 client.on_message = on_message
-client.connect("broker.mqttdashboard.com",port=1883, keepalive=60, bind_address="")
+client.connect("broker.mqttdashboard.com", port=1883, keepalive=60, bind_address="")
 
 rc = 0
 while rc == 0:
