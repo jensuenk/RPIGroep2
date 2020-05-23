@@ -38,7 +38,7 @@ def buttonLeft(channel):
 		requestPlayer()
 		return
 	#print("[Debug] Sending message: " + player + " " + str(playerNumber) + " - " + "UP")
-	client.publish("game/" + player + str(playerNumber), "RIGHT")
+	client.publish("game/" + player + str(playerNumber), "UP")
 	
 def buttonRight(channel):
 	global player
@@ -49,7 +49,7 @@ def buttonRight(channel):
 		requestPlayer()
 		return
 	#print("[Debug] Sending message: " + player + " " + str(playerNumber) + " - " + "DOWN")
-	client.publish("game/" + player + str(playerNumber), "LEFT")
+	client.publish("game/" + player + str(playerNumber), "DOWN")
 	
 
 def requestPlayer():
@@ -83,13 +83,13 @@ def showLed():
 	GPIO.output(list(leds), GPIO.LOW)
 	if player == "corona":
 		print("[Debug] Console assigned to CORONA")
-		GPIO.output(leds[0], GPIO.HIGH)
+		GPIO.output(leds[2], GPIO.HIGH)
 	elif player == "shoppingCar":
 		print("[Debug] Console assigned to SHOPPINGCAR")
 		GPIO.output(leds[1], GPIO.HIGH)
 	elif player == "toiletPaper":
 		print("[Debug] Console assigned to TOILETPAPAER")
-		GPIO.output(leds[2], GPIO.HIGH)
+		GPIO.output(leds[1], GPIO.HIGH)
 
 def on_connect(client, userdata, flags, rc):
 	global topic
@@ -98,7 +98,7 @@ def on_connect(client, userdata, flags, rc):
 
 def on_message(client, userdata, msg):
 	message = str(msg.payload.decode("utf-8"))
-	print("[Debug] received message: " + message)
+	#print("[Debug] received message: " + message)
 	# Todo:
 	# Check message when received and take action
 	#if "" in message:
