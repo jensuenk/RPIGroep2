@@ -37,7 +37,6 @@ def buttonLeft(channel):
 		print("[Debug] No player/ number assigned")
 		requestPlayer()
 		return
-	#print("[Debug] Sending message: " + player + " " + str(playerNumber) + " - " + "UP")
 	client.publish("game/" + player + str(playerNumber), "UP")
 	
 def buttonRight(channel):
@@ -53,12 +52,11 @@ def buttonRight(channel):
 	
 
 def requestPlayer():
-	# Todo: Ask console for a player and number
+	# Ask console for a player and number (not used)
 	# client.publish("requestplayer")
 	# client.publish("requestnumber")
-	print("[Debug] Requesting player")
+	#print("[Debug] Requesting player")
 
-# Called when received a message from the broker to assign a player and number
 def assignPlayer(playerReceived, playerNumberReceived):
 	global player
 	global playerNumber
@@ -89,21 +87,16 @@ def showLed():
 		GPIO.output(leds[1], GPIO.HIGH)
 	elif player == "toiletPaper":
 		print("[Debug] Console assigned to TOILETPAPAER")
-		GPIO.output(leds[1], GPIO.HIGH)
+		GPIO.output(leds[0], GPIO.HIGH)
 
 def on_connect(client, userdata, flags, rc):
 	global topic
 	print("[Debug] Connected with result code " + str(rc))
-	client.subscribe("game/#")
+	#client.subscribe("game/assignPlayer")
 
 def on_message(client, userdata, msg):
 	message = str(msg.payload.decode("utf-8"))
-	#print("[Debug] received message: " + message)
-	# Todo:
-	# Check message when received and take action
-	#if "" in message:
-	#if "playerassign" in message:
-	# 	assignPlayer(..., ...)
+	print("[Debug] received message: " + message)
 
 GPIO.add_event_detect(buttonLeftPin, GPIO.RISING, callback=buttonLeft, bouncetime=100)
 GPIO.add_event_detect(buttonRightPin, GPIO.RISING, callback=buttonRight, bouncetime=100)
@@ -111,8 +104,7 @@ GPIO.add_event_detect(buttonRightPin, GPIO.RISING, callback=buttonRight, bouncet
 client = mqtt.Client()
 client.on_connect = on_connect
 client.on_message = on_message
-client.connect("broker.mqttdashboard.com", port=1883, keepalive=60, bind_address="")
-#client.subscribe("game/assignPlayer")
+client.connect("81.165.114.134", port=1883, keepalive=60, bind_address="")
 
 
 assignPlayer(player, playerNumber)
